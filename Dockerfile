@@ -25,6 +25,12 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 CSRF_TRUSTED_ORIGINS = [FRONTEND_HOST]
 PY
 
+# A POST to the sign-up form answers 403 instead of allauth's 200 "Sign Up Closed" page (see railway_signup_closed.py). local_settings is
+# imported into a separate namespace and cannot reach MIDDLEWARE, so the entry goes into settings.py itself, first in the list.
+COPY railway_signup_closed.py /home/mediacms.io/mediacms/cms/railway_signup_closed.py
+RUN sed -i 's/^MIDDLEWARE = \[$/MIDDLEWARE = [\n    "cms.railway_signup_closed.SignupClosedMiddleware",/' /home/mediacms.io/mediacms/cms/settings.py \
+ && grep -A1 '^MIDDLEWARE = \[' /home/mediacms.io/mediacms/cms/settings.py | grep -q SignupClosedMiddleware
+
 COPY railway-boot.sh /railway-boot.sh
 RUN chmod 0755 /railway-boot.sh
 
